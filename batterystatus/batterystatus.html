@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html>
+	<style type="text/css">
+		*{
+			margin-top:10px;
+			font-size:16px;
+			padding:10px;
+		}
+		body{
+			background:rgb(200,200,255);
+		}
+		#container{
+			width:50%;
+			margin:0 auto;
+			background:white;
+			border-radius:10px;
+			overflow:auto;
+		}
+
+		#stage{
+			border:1px solid black;
+			float:left;
+		}
+		.desc{
+			float:left;
+			margin-left:1%;
+			width:50%;
+		}
+		.desc p{
+			display:inline-block;
+			width:45%;		
+		}
+	</style>
+
+	<body>
+		<div id='container'>
+			<h2>Battery status</h2>
+			<canvas id="stage" width="200" height="440"></canvas>
+			<div class="desc">
+				Battery charging?- <p id="status"></p>
+				Battery level:- <p id="level"></p>
+			</div>
+		</div>
+	</body>
+
+	<script type="text/javascript">
+		var canvas = document.getElementById('stage');
+		var ctx = canvas.getContext('2d');
+		var boxWidth=0;
+		ctx.fillStyle = '#212121';
+		navigator.getBattery().then(function(battery) {
+			document.getElementById('status').innerHTML=(battery.charging ? "Yes" : "No");
+			document.getElementById('level').innerHTML=battery.level * 100 + "%";
+			console.log("Battery charging? " + (battery.charging ? "Yes" : "No"));
+			console.log("Battery level: " + battery.level * 100 + "%");
+			console.log("Battery charging time: " + battery.chargingTime + " seconds");
+			console.log("Battery discharging time: " + battery.dischargingTime + " seconds");
+
+			battery.addEventListener('chargingchange', function() {
+				document.getElementById('status').innerHTML=(battery.charging ? "Yes" : "No");
+			});
+
+			battery.addEventListener('levelchange', function() {
+				document.getElementById('level').innerHTML=battery.level * 100 + "%";
+				update(battery);
+			});
+
+			battery.addEventListener('chargingtimechange', function() {
+				console.log("Battery charging time: " + battery.chargingTime + " seconds");
+			});
+
+			battery.addEventListener('dischargingtimechange', function() {
+				console.log("Battery discharging time: " + battery.dischargingTime + " seconds");
+			});
+			setInterval(function(){
+				update(battery);
+			},500);
+		});
+		
+	
+		function update(battery) {
+			ctx.clearRect(0, (canvas.height-boxWidth), canvas.width,boxWidth);
+			if(battery.charging){				
+				if(boxWidth<= canvas.height){					
+					boxWidth=boxWidth+100;					
+				}else{
+					boxWidth=0;					
+				}				
+				ctx.fillRect(0, (canvas.height-boxWidth), canvas.width,boxWidth);				
+			}else{
+				boxWidth=battery.level * canvas.height;
+				ctx.fillRect(0, (canvas.height-boxWidth), canvas.width,boxWidth);
+			}	
+		}
+	</script>
+</html>
